@@ -7,8 +7,23 @@ const { User, Account } = require("../db");
 const { JWT_SECRET } = require("../config");
 const { authenticateToken } = require("../middleware");
 
-router.get("/", (req, res) => {
-  res.json("port running");
+router.get("/user", authenticateToken, async (req, res) => {
+  try {
+    const account = await Account.findOne({
+      userId: req.userId,
+    });
+    const user = await User.findOne({
+      id: req.userId,
+    });
+    res.json({
+      firstName: user.firstName,
+      balance: account.balance,
+    });
+  } catch (e) {
+    res.json({ msg: "user not found" });
+  }
+
+  res.json({msg: "user data sent"});
 });
 
 router.get("/all", async (req, res) => {
@@ -27,19 +42,22 @@ router.post("/signup", async (req, res) => {
   const body = req.body;
   const { success } = signUpSchema.safeParse(body);
   if (!success) {
-    res.status(400).json({
-      msg: "username or password must be strings",
+    return res.status(400).json({
+      msg: "username or password must follow the rules",
     });
   }
   const user = await User.findOne({ username: body.email });
   if (user) {
-    return res.json({
+    return res.status(400).json({
       msg: "User already exists",
     });
   }
-  const newUser = await User.create(
-    {username: body.email, password: body.password, firstName: body.firstName, lastName: body.lastName}
-    );
+  const newUser = await User.create({
+    username: body.email,
+    password: body.password,
+    firstName: body.firstName,
+    lastName: body.lastName,
+  });
   const userId = newUser._id;
   const token = jwt.sign({ userId: userId }, JWT_SECRET);
   await Account.create({
@@ -86,12 +104,14 @@ router.get("/bulk", async (req, res) => {
     $or: [
       {
         firstName: {
-          $regex: filter,
+          // $regex: filter,
+          $regex: new RegExp(filter, "i"),
         },
       },
       {
         lastName: {
-          $regex: filter,
+          // $regex: filter,
+          $regex: new RegExp(filter, "i"),
         },
       },
     ],
