@@ -9,56 +9,48 @@ export const Users = () => {
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("");
   const [currPage, setCurrPage] = useState(1);
-  const [entries, setEntries] = useState(8);
+  const [entries, setEntries] = useState(6);
 
 const handlePrev = () => {
   if (currPage > 1) {
-    setCurrPage(currPage - 1); // Go to previous page
+    setCurrPage(currPage - 1); 
   } else {
-    setCurrPage(Math.ceil(users.length / entries)); // Go to last page when on first page
+    setCurrPage(Math.ceil(users.length / entries));
   }
 };
 
 const handleNext = () => {
   if (currPage < Math.ceil(users.length / entries)) {
-    setCurrPage(currPage + 1); // Go to next page
+    setCurrPage(currPage + 1); 
   } else {
-    setCurrPage(1); // Loop back to the first page after the last one
+    setCurrPage(1);
   }
 };
 
   useEffect(() => {
-    axios.get("http://localhost:3000/users/all").then((response) => {
-      setUsers(response.data.users);
-    });
-  
-  }, []);
-
-  useEffect(() => {
+    // console.log('users loaded')
     const interval = setTimeout(() => {
       if (filter.length>0) {
         axios.get("http://localhost:3000/users/bulk?filter=" + filter)
           .then((response) => {
             setUsers(response.data.user);
-            console.log(response.data.user);
           });
       } else{
           axios.get("http://localhost:3000/users/all").then((response) => {
             setUsers(response.data.users);
           });
       }
-    }, 300);
-
+    }, 400);
     return () => {
       clearTimeout(interval);
     };
   }, [filter]);
 
   return (
-    <div className="flex flex-col justify-between h-[90%]">
+    <div className="flex flex-col justify-between h-[80%]">
       <div className="flex flex-col">
         <input
-          className="w-full px-2 py-1 mb-2 border rounded border-slate-200"
+          className="w-full px-4 py-2 mb-4 border-2 rounded border-slate-300"
           type="text"
           onChange={async (e) => {
             setFilter(e.target.value);

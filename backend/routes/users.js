@@ -13,17 +13,21 @@ router.get("/user", authenticateToken, async (req, res) => {
       userId: req.userId,
     });
     const user = await User.findOne({
-      id: req.userId,
+      _id: req.userId,
     });
-    res.json({
-      firstName: user.firstName,
-      balance: account.balance,
-    });
+    res.status(200).json({
+      msg: "User information sent successfully",
+      userInfo: 
+      {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        balance: account.balance,
+        email: user.username,
+      }
+      });
   } catch (e) {
-    res.json({ msg: "user not found" });
+    res.status(400).json({ msg: "user not found" ,er:e});
   }
-
-  res.json({msg: "user data sent"});
 });
 
 router.get("/all", async (req, res) => {
@@ -48,7 +52,7 @@ router.post("/signup", async (req, res) => {
   }
   const user = await User.findOne({ username: body.email });
   if (user) {
-    return res.status(400).json({
+    return res.status(403).json({
       msg: "User already exists",
     });
   }
@@ -93,7 +97,7 @@ router.put("/", authenticateToken, async (req, res) => {
     return res.status(400).json({ msg: "Invalid Characters" });
   }
   await User.updateOne(body, {
-    id: req.userId,
+    _id: req.userId,
   });
   res.json({ msg: "User updated successfully" });
 });
